@@ -10,6 +10,7 @@
 
 package me.pikamug.quests.commands.quest;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import me.pikamug.quests.BukkitQuestsPlugin;
 import me.pikamug.quests.player.Quester;
 import me.pikamug.quests.quests.components.BukkitRequirements;
@@ -52,7 +53,7 @@ public class BukkitQuestCommandHandler {
                                     || quester.getStageTime(q) < 0L) {
                                 final String msg = BukkitLang.get(player, "questObjectivesTitle")
                                         .replace("<quest>", q.getName());
-                                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                                UniversalScheduler.getScheduler(plugin).runTaskLater(() -> {
                                     BukkitLang.send(player, ChatColor.GOLD + msg);
                                     quester.showCurrentObjectives(q, quester, false);
                                     ticks[0]++;
@@ -62,7 +63,7 @@ public class BukkitQuestCommandHandler {
                                 final String msg = ChatColor.YELLOW + "(" + BukkitLang.get(player, "delay") + ") "
                                         + ChatColor.RED + BukkitLang.get(player, "plnTooEarly")
                                         .replace("<quest>", q.getName().replace("<time>", BukkitMiscUtil.getTime(time)));
-                                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                                UniversalScheduler.getScheduler(plugin).runTaskLater(() -> {
                                     BukkitLang.send(player, msg);
                                     ticks[0]++;
                                 }, ticks[0]);

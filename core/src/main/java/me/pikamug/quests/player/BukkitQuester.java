@@ -12,6 +12,8 @@ package me.pikamug.quests.player;
 
 import com.alessiodp.parties.api.interfaces.Party;
 import com.alessiodp.parties.api.interfaces.PartyPlayer;
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import com.gmail.nossr50.datatypes.skills.SkillType;
 import com.gmail.nossr50.util.player.UserManager;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -73,7 +75,7 @@ public class BukkitQuester implements Quester {
     protected int questPoints = 0;
     private String compassTargetQuestId;
     private long lastNotifiedCondition = 0L;
-    protected ConcurrentHashMap<Integer, Quest> timers = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<MyScheduledTask, Quest> timers = new ConcurrentHashMap<>();
     protected ConcurrentHashMap<Quest, Integer> currentQuests = new ConcurrentHashMap<Quest, Integer>() {
 
         private static final long serialVersionUID = 6361484975823846780L;
@@ -293,17 +295,17 @@ public class BukkitQuester implements Quester {
     }
 
     @Override
-    public ConcurrentHashMap<Integer, Quest> getTimers() {
+    public ConcurrentHashMap<MyScheduledTask, Quest> getTimers() {
         return timers;
     }
 
     @Override
-    public void setTimers(final ConcurrentHashMap<Integer, Quest> timers) {
+    public void setTimers(final ConcurrentHashMap<MyScheduledTask, Quest> timers) {
         this.timers = timers;
     }
 
     @Override
-    public void removeTimer(final Integer timerId) {
+    public void removeTimer(final MyScheduledTask timerId) {
         this.timers.remove(timerId);
     }
 
@@ -3256,7 +3258,7 @@ public class BukkitQuester implements Quester {
     public void sayPassword(final Quest quest, final AsyncPlayerChatEvent evt) {
         final ObjectiveType type = ObjectiveType.PASSWORD;
         final Set<String> dispatchedQuestIDs = new HashSet<>();
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        UniversalScheduler.getScheduler(plugin).runTask(() -> {
             final BukkitQuesterPreUpdateObjectiveEvent preEvent = new BukkitQuesterPreUpdateObjectiveEvent(this, quest,
                     new BukkitObjective(type, null, 1, 1));
             plugin.getServer().getPluginManager().callEvent(preEvent);
@@ -3268,9 +3270,11 @@ public class BukkitQuester implements Quester {
                     final String display = getCurrentStage(quest).getPasswordDisplays().get(index);
                     bukkitQuestProgress.passwordsSaid.set(index, true);
 
-                    plugin.getServer().getScheduler().runTask(plugin, () -> finishObjective(quest,
-                            new BukkitObjective(type, null, BlockItemStack.of(Material.AIR, 1, (short) 0),
-                            BlockItemStack.of(Material.AIR, 1, (short) 0)), null, null, null, null, null, display, null));
+                    UniversalScheduler.getScheduler(plugin).runTask(() -> {
+                        finishObjective(quest,
+                                new BukkitObjective(type, null, BlockItemStack.of(Material.AIR, 1, (short) 0),
+                                        BlockItemStack.of(Material.AIR, 1, (short) 0)), null, null, null, null, null, display, null);
+                    });
 
                     final int finalIndex = index;
                     dispatchedQuestIDs.addAll(dispatchMultiplayerEverything(quest, type,
@@ -3968,11 +3972,10 @@ public class BukkitQuester implements Quester {
      */
     public void startStageTimer(final Quest quest) {
         if (getQuestProgressOrDefault(quest).getDelayTimeLeft() > -1) {
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new BukkitStageTimer(plugin, this, quest),
-                    (long) (getQuestProgressOrDefault(quest).getDelayTimeLeft() * 0.02));
+            UniversalScheduler.getScheduler(plugin).runTaskLater(new BukkitStageTimer(plugin, this, quest), (long) (getQuestProgressOrDefault(quest).getDelayTimeLeft() * 0.02));
         } else {
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new BukkitStageTimer(plugin, this, quest),
-                    (long) (getCurrentStage(quest).getDelay() * 0.02));
+
+            UniversalScheduler.getScheduler(plugin).runTaskLater(() -> new BukkitStageTimer(plugin, this, quest), (long) (getCurrentStage(quest).getDelay() * 0.02));
             if (getCurrentStage(quest).getDelayMessage() != null) {
                 final Player p = plugin.getServer().getPlayer(id);
                 if (p != null) {
@@ -4097,9 +4100,9 @@ public class BukkitQuester implements Quester {
             currentQuests.remove(quest);
             questProgress.remove(quest);
             if (!timers.isEmpty()) {
-                for (final Map.Entry<Integer, Quest> entry : timers.entrySet()) {
+                for (final Map.Entry<MyScheduledTask, Quest> entry : timers.entrySet()) {
                     if (entry.getValue().getName().equals(quest.getName())) {
-                        plugin.getServer().getScheduler().cancelTask(entry.getKey());
+                        entry.getKey().cancel();
                         timers.remove(entry.getKey());
                     }
                 }
@@ -4233,7 +4236,7 @@ public class BukkitQuester implements Quester {
         if (getPlayer() == null || !getPlayer().hasPermission("quests.compass")) {
             return;
         }
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        UniversalScheduler.getScheduler(plugin).runTaskAsynchronously(() -> {
             final LinkedList<String> list = currentQuests.keySet().stream()
                     .sorted(Comparator.comparing(Quest::getName)).map(Quest::getId)
                     .collect(Collectors.toCollection(LinkedList::new));
@@ -4533,7 +4536,7 @@ public class BukkitQuester implements Quester {
                         .replace("<quest>", quest.getName()));
                 }
                 if (stage.getFailAction() != null) {
-                    plugin.getServer().getScheduler().runTask(plugin, () -> stage.getFailAction().fire(this, quest));
+                    UniversalScheduler.getScheduler(plugin).runTask(() -> stage.getFailAction().fire(this, quest));
                 }
                 hardQuit(quest);
             } else if (giveReason) {

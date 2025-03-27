@@ -10,6 +10,7 @@
 
 package me.pikamug.quests.statistics;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -96,7 +97,7 @@ public class BukkitMetrics {
             enabled,
             this::appendPlatformData,
             this::appendServiceData,
-            submitDataTask -> Bukkit.getScheduler().runTask(plugin, submitDataTask),
+            submitDataTask -> UniversalScheduler.getScheduler(plugin).runTask(submitDataTask),
             plugin::isEnabled,
             (message, error) -> this.plugin.getLogger().log(Level.WARNING, message, error),
             (message) -> this.plugin.getLogger().log(Level.INFO, message),

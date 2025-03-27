@@ -2,22 +2,22 @@
  * Copyright (c) PikaMug and contributors
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
- * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
  * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package me.pikamug.quests.tasks;
 
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import me.pikamug.quests.quests.Quest;
 import me.pikamug.quests.player.Quester;
 import me.pikamug.quests.util.BukkitLang;
 import me.pikamug.quests.util.BukkitMiscUtil;
 import org.bukkit.ChatColor;
-import org.bukkit.scheduler.BukkitRunnable;
 
-public class BukkitActionTimer extends BukkitRunnable {
+public class BukkitActionTimer extends UniversalRunnable {
 
     private final Quester quester;
     private final Quest quest;
@@ -31,7 +31,6 @@ public class BukkitActionTimer extends BukkitRunnable {
 
     @Override
     public void run() {
-        quester.removeTimer(getTaskId());
         if (time < 1) {
             quest.failQuest(quester, false);
             quester.updateJournal();
@@ -40,4 +39,5 @@ public class BukkitActionTimer extends BukkitRunnable {
                     .replace("<time>", BukkitMiscUtil.getTime(time * 1000L)).replace("<quest>", quest.getName()));
         }
     }
+
 }

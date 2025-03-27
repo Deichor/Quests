@@ -10,6 +10,7 @@
 
 package me.pikamug.quests.player;
 
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import me.pikamug.quests.quests.Quest;
 import me.pikamug.quests.quests.components.Stage;
 import me.pikamug.quests.quests.components.Objective;
@@ -71,11 +72,11 @@ public interface Quester extends Comparable<Quester> {
      */
     void setCompassTarget(final Quest quest);
 
-    ConcurrentHashMap<Integer, Quest> getTimers();
+    ConcurrentHashMap<MyScheduledTask, Quest> getTimers();
 
-    void setTimers(final ConcurrentHashMap<Integer, Quest> timers);
+    void setTimers(final ConcurrentHashMap<MyScheduledTask, Quest> timers);
 
-    void removeTimer(final Integer timerId);
+    void removeTimer(final MyScheduledTask timerId);
 
     ConcurrentHashMap<Quest, Integer> getCurrentQuests();
 

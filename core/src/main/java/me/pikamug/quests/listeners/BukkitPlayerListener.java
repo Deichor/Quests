@@ -11,6 +11,7 @@
 package me.pikamug.quests.listeners;
 
 import com.github.Anon8281.universalScheduler.UniversalRunnable;
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import me.pikamug.quests.BukkitQuestsPlugin;
 import me.pikamug.quests.enums.ObjectiveType;
 import me.pikamug.quests.player.BukkitQuester;
@@ -136,8 +137,7 @@ public class BukkitPlayerListener implements Listener {
                                     e.printStackTrace();
                                 }
                             }
-                            plugin.getServer().getScheduler().runTaskLater(plugin, () ->
-                                    event.getWhoClicked().closeInventory(), 1L);
+                            UniversalScheduler.getScheduler(plugin).runTaskLater(event.getWhoClicked(), () -> event.getWhoClicked().closeInventory(), 1L);
                             return;
                         }
                     }
@@ -861,7 +861,7 @@ public class BukkitPlayerListener implements Listener {
         final Player player = event.getPlayer();
         if (plugin.canUseQuests(player.getUniqueId())) {
             final Quester quester = plugin.getQuester(player.getUniqueId());
-            Bukkit.getScheduler().runTaskLater(plugin, quester::findCompassTarget, 10);
+            UniversalScheduler.getScheduler(plugin).runTaskLater(quester::findCompassTarget, 10);
         }
     }
 
@@ -883,8 +883,7 @@ public class BukkitPlayerListener implements Listener {
             if (plugin.getConfigSettings().canGenFilesOnJoin() && !noobCheck.hasData()) {
                 noobCheck.saveData();
             }
-
-            plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, () -> {
+            UniversalScheduler.getScheduler(plugin).runTaskLaterAsynchronously(() -> {
                 final CompletableFuture<Quester> cf = plugin.getStorage().loadQuester(player.getUniqueId());
                 try {
                     final Quester quester = cf.get();
@@ -906,7 +905,7 @@ public class BukkitPlayerListener implements Listener {
                             quester.startStageTimer(quest);
                         }
                     }
-                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                    UniversalScheduler.getScheduler(plugin).runTaskLater(() -> {
                         boolean alreadyHasAtLeastOneGlobalQuest = false;
                         for (final Quest cq : quester.getCurrentQuests().keySet()) {
                             if (cq.getOptions().canGiveGloballyAtLogin()) {
@@ -1013,7 +1012,7 @@ public class BukkitPlayerListener implements Listener {
      * @since 3.8.2
      */
     public void playerMove(final UUID uuid, final Location location) {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        UniversalScheduler.getScheduler(plugin).runTaskAsynchronously(() -> {
             final Quester quester = plugin.getQuester(uuid);
             if (quester != null) {
                 if (plugin.canUseQuests(uuid)) {
@@ -1027,16 +1026,14 @@ public class BukkitPlayerListener implements Listener {
                         if (quester.getCurrentQuests().containsKey(quest)) {
                             if (quester.getCurrentStage(quest) != null
                                     && quester.getCurrentStage(quest).containsObjective(type)) {
-                                plugin.getServer().getScheduler().runTask(plugin, () -> quester
-                                        .reachLocation(quest, location));
+                                UniversalScheduler.getScheduler(plugin).runTask(location, () -> quester.reachLocation(quest, location));
                             }
                         }
 
                         dispatchedQuestIDs.addAll(quester.dispatchMultiplayerEverything(quest, type,
                                 (final Quester q, final Quest cq) -> {
                             if (!dispatchedQuestIDs.contains(cq.getId())) {
-                                plugin.getServer().getScheduler().runTask(plugin, () -> q
-                                        .reachLocation(cq, location));
+                                UniversalScheduler.getScheduler(plugin).runTask(location, () -> q.reachLocation(cq, location));
                             }
                             return null;
                         }));

@@ -10,6 +10,7 @@
 
 package me.pikamug.quests.actions;
 
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import me.pikamug.quests.BukkitQuestsPlugin;
 import me.pikamug.quests.entity.QuestMob;
 import me.pikamug.quests.player.Quester;
@@ -411,17 +412,19 @@ public class BukkitAction implements Action {
             final List<Integer> toNotify = Arrays.asList(60, 30, 10, 5, 4, 3, 2, 1);
             for (final int seconds : toNotify) {
                 if (timer > seconds) {
-                    quester.getTimers().put(new BukkitActionTimer(quester, quest, seconds)
-                            .runTaskLater(plugin, (timer - seconds) * 20L).getTaskId(), quest);
+
+                    quester.getTimers().put(
+                            new BukkitActionTimer(quester, quest, seconds)
+                            .runTaskLater(plugin, (timer - seconds) * 20L), quest);
                 }
             }
             quester.getTimers().put(new BukkitActionTimer(quester, quest, 0)
-                    .runTaskLater(plugin, timer * 20L).getTaskId(), quest);
+                    .runTaskLater(plugin, timer * 20L), quest);
         }
         if (cancelTimer) {
-            for (final Map.Entry<Integer, Quest> entry : quester.getTimers().entrySet()) {
+            for (final Map.Entry<MyScheduledTask, Quest> entry : quester.getTimers().entrySet()) {
                 if (entry.getValue().getId().equals(quest.getId())) {
-                    plugin.getServer().getScheduler().cancelTask(entry.getKey());
+                    entry.getKey().cancel();
                     quester.getTimers().remove(entry.getKey());
                 }
             }

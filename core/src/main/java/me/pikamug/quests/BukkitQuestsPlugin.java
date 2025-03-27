@@ -10,6 +10,7 @@
 
 package me.pikamug.quests;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import de.tr7zw.changeme.nbtapi.NBT;
 import me.pikamug.localelib.LocaleManager;
 import me.pikamug.quests.actions.Action;
@@ -210,7 +211,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
         getServer().getPluginManager().registerEvents(getPlayerListener(), this);
         if (configSettings.getStrictPlayerMovement() > 0) {
             final long ticks = configSettings.getStrictPlayerMovement() * 20L;
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, getPlayerMoveThread(), ticks, ticks);
+            UniversalScheduler.getScheduler(this).runTaskTimer(getPlayerMoveThread(), ticks, ticks);
         }
         if (depends.getPartyProvider() != null) {
             getServer().getPluginManager().registerEvents(getUniteListener(), this);
@@ -236,7 +237,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
         for (final Player p : getServer().getOnlinePlayers()) {
             getQuester(p.getUniqueId()).saveData();
         }
-        getServer().getScheduler().cancelTasks(this);
+        UniversalScheduler.getScheduler(this).cancelTasks();
         getLogger().info("Closing storage...");
         if (storage != null) {
             storage.close();
@@ -612,7 +613,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
      * At startup, this lets soft-depends (namely Citizens) fully load first
      */
     private void delayLoadQuestInfo() {
-        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+        UniversalScheduler.getScheduler(this).runTaskLater(() -> {
             conditionLoader.init();
             actionLoader.init();
             questLoader.init();
@@ -623,7 +624,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             if (getConfigSettings().canDisableCommandFeedback()) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "gamerule sendCommandFeedback false");
             }
-            getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            UniversalScheduler.getScheduler(this).runTaskAsynchronously(() -> {
                 try {
                     questers = storage.loadOfflineQuesters().get();
                 } catch (final Exception e) {
@@ -631,7 +632,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
                 }
             });
         }, 5L);
-        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+        UniversalScheduler.getScheduler(this).runTaskLater(() -> {
             // Workaround for issues with the Compass on fast join
             for (final Player p : getServer().getOnlinePlayers()) {
                 final Quester quester =  new BukkitQuester(BukkitQuestsPlugin.this, p.getUniqueId());
@@ -655,7 +656,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
         }
         loading = true;
         reloadConfig();
-        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+        UniversalScheduler.getScheduler(this).runTaskAsynchronously(() -> {
             try {
                 final long startTime = System.currentTimeMillis();
                 if (getConfigSettings().getConsoleLogging() > 3) {
@@ -707,7 +708,7 @@ public class BukkitQuestsPlugin extends JavaPlugin implements Quests {
             exception.printStackTrace();
         }
         if (callback != null) {
-            getServer().getScheduler().runTask(BukkitQuestsPlugin.this, () -> {
+            UniversalScheduler.getScheduler(BukkitQuestsPlugin.this).runTask(() -> {
                 loading = false;
                 callback.execute(result);
             });

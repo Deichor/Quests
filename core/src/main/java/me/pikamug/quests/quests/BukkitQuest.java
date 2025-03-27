@@ -12,6 +12,8 @@ package me.pikamug.quests.quests;
 
 import com.alessiodp.parties.api.interfaces.Party;
 import com.alessiodp.parties.api.interfaces.PartyPlayer;
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import com.gmail.nossr50.config.Config;
 import com.gmail.nossr50.datatypes.skills.SkillType;
 import com.gmail.nossr50.util.player.UserManager;
@@ -256,9 +258,7 @@ public class BukkitQuest implements Quest {
             doNextStage(quester, allowSharedProgress);
         } else {
             // Here we avoid BukkitStageTimer as the stage objectives are incomplete
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                doNextStage(quester, allowSharedProgress);
-            }, (long) (currentStage.getDelay() * 0.02));
+            UniversalScheduler.getScheduler(plugin).runTaskLater(() -> doNextStage(quester, allowSharedProgress), (long) (currentStage.getDelay() * 0.02));
         }
         quester.updateJournal();
     }
@@ -381,7 +381,7 @@ public class BukkitQuest implements Quest {
             return false;
         }
         final Quest quest = this;
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        UniversalScheduler.getScheduler(plugin).runTask(() -> {
             Location targetLocation = null;
             if (stage.getNpcsToInteract() != null && stage.getNpcsToInteract().size() > 0) {
                 targetLocation = plugin.getDependencies().getNpcLocation(stage.getNpcsToInteract().getFirst());
@@ -709,9 +709,9 @@ public class BukkitQuest implements Quest {
         final ConcurrentSkipListSet<Quest> completedQuests = quester.getCompletedQuests();
         completedQuests.add(this);
         quester.setCompletedQuests(completedQuests);
-        for (final Map.Entry<Integer, Quest> entry : quester.getTimers().entrySet()) {
+        for (final Map.Entry<MyScheduledTask, Quest> entry : quester.getTimers().entrySet()) {
             if (entry.getValue().getName().equals(getName())) {
-                plugin.getServer().getScheduler().cancelTask(entry.getKey());
+                entry.getKey().cancel();
                 quester.getTimers().remove(entry.getKey());
             }
         }
@@ -719,7 +719,7 @@ public class BukkitQuest implements Quest {
             final Player p = (Player)player;
             final String[] ps = BukkitConfigUtil.parseStringWithPossibleLineBreaks(ChatColor.AQUA
                     + finished, this, p);
-            Bukkit.getScheduler().runTaskLater(plugin, () -> p.sendMessage(ps), 40);
+            UniversalScheduler.getScheduler(plugin).runTaskLater(p, () -> p.sendMessage(ps), 40);
         }
         if (planner.getCooldown() > -1) {
             quester.getCompletedTimes().put(this, System.currentTimeMillis());
@@ -770,7 +770,7 @@ public class BukkitQuest implements Quest {
             if (Bukkit.isPrimaryThread()) {
                 Bukkit.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command);
             } else {
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () ->
+                UniversalScheduler.getScheduler(plugin).runTaskAsynchronously(() ->
                         Bukkit.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command));
             }
             issuedReward = true;
@@ -1087,9 +1087,9 @@ public class BukkitQuest implements Quest {
         if (preEvent.isCancelled()) {
             return;
         }
-        for (final Map.Entry<Integer, Quest> entry : quester.getTimers().entrySet()) {
+        for (final Map.Entry<MyScheduledTask, Quest> entry : quester.getTimers().entrySet()) {
             if (entry.getValue().getId().equals(getId())) {
-                plugin.getServer().getScheduler().cancelTask(entry.getKey());
+                entry.getKey().cancel();
                 quester.getTimers().remove(entry.getKey());
             }
         }

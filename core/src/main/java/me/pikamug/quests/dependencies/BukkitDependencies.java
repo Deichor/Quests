@@ -12,6 +12,8 @@ package me.pikamug.quests.dependencies;
 
 import com.alessiodp.parties.api.Parties;
 import com.alessiodp.parties.api.interfaces.PartiesAPI;
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
+import com.github.Anon8281.universalScheduler.scheduling.tasks.MyScheduledTask;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.SkillType;
 import com.gmail.nossr50.mcMMO;
@@ -62,7 +64,7 @@ public class BukkitDependencies implements Dependencies {
     private static AstralBooksAPI astralBooks = null;
     private static PartiesAPI parties = null;
     private final BukkitQuestsPlugin plugin;
-    private int npcEffectThread = -1;
+    private MyScheduledTask npcEffectThread;
 
     public BukkitDependencies(final BukkitQuestsPlugin plugin) {
         this.plugin = plugin;
@@ -350,15 +352,14 @@ public class BukkitDependencies implements Dependencies {
     }
 
     public void startNpcEffectThread() {
-        if (npcEffectThread == -1 && plugin.getConfigSettings().canNpcEffects()) {
-            npcEffectThread = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin,
-                    plugin.getNpcEffectThread(), 20, 20);
+        if (npcEffectThread == null && plugin.getConfigSettings().canNpcEffects()) {
+            npcEffectThread = UniversalScheduler.getScheduler(plugin).runTaskTimer(plugin.getNpcEffectThread(), 20, 20);
         }
     }
 
     @SuppressWarnings("unused")
     public void stopNpcEffectThread() {
-        plugin.getServer().getScheduler().cancelTask(npcEffectThread);
+        npcEffectThread.cancel();
     }
 
     public SkillType getMcMMOSkill(final String s) {

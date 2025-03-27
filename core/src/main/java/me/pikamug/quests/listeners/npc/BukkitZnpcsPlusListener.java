@@ -1,5 +1,6 @@
 package me.pikamug.quests.listeners.npc;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import lol.pyr.znpcsplus.api.event.NpcInteractEvent;
 import lol.pyr.znpcsplus.api.interaction.InteractionType;
 import me.pikamug.quests.BukkitQuestsPlugin;
@@ -21,7 +22,7 @@ public class BukkitZnpcsPlusListener extends BukkitNpcListener {
         UUID npcUUID = event.getNpc() != null ? event.getNpc().getUuid() : null;
 
         // Needed because the NpcInteractEvent is fired async
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        UniversalScheduler.getScheduler(plugin).runTask(() -> {
             if (event.getClickType().equals(InteractionType.LEFT_CLICK)) {
                 interactNPC(player, npcUUID, ClickType.LEFT);
             } else if (event.getClickType().equals(InteractionType.RIGHT_CLICK)) {

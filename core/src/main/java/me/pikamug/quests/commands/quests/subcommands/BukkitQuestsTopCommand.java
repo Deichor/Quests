@@ -10,11 +10,11 @@
 
 package me.pikamug.quests.commands.quests.subcommands;
 
+import com.github.Anon8281.universalScheduler.UniversalScheduler;
 import me.pikamug.quests.BukkitQuestsPlugin;
 import me.pikamug.quests.commands.BukkitQuestsSubCommand;
 import me.pikamug.quests.player.Quester;
 import me.pikamug.quests.util.BukkitLang;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -79,7 +79,7 @@ public class BukkitQuestsTopCommand extends BukkitQuestsSubCommand {
                         .replace("<greatest>", String.valueOf(plugin.getConfigSettings().getTopLimit())));
                 return;
             }
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            UniversalScheduler.getScheduler(plugin).runTaskAsynchronously(() -> {
                 final Map<String, Integer> questPoints = plugin.getOfflineQuesters().stream()
                         .collect(Collectors.toMap(Quester::getLastKnownName, Quester::getQuestPoints));
                 final LinkedHashMap<String, Integer> sortedMap = (LinkedHashMap<String, Integer>) sort(questPoints);

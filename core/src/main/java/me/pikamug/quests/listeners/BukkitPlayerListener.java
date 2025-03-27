@@ -10,6 +10,7 @@
 
 package me.pikamug.quests.listeners;
 
+import com.github.Anon8281.universalScheduler.UniversalRunnable;
 import me.pikamug.quests.BukkitQuestsPlugin;
 import me.pikamug.quests.enums.ObjectiveType;
 import me.pikamug.quests.player.BukkitQuester;
@@ -61,7 +62,6 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -515,7 +515,7 @@ public class BukkitPlayerListener implements Listener {
                         final String chat = event.getMessage();
                         for (final String s : currentStage.getChatActions().keySet()) {
                             if (s.equalsIgnoreCase(chat)) {
-                                new BukkitRunnable() {
+                                new UniversalRunnable() {
                                     @Override
                                     public void run() {
                                         currentStage.getChatActions().get(s).fire(quester, quest);

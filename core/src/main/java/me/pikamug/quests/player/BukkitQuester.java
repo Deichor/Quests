@@ -3270,11 +3270,9 @@ public class BukkitQuester implements Quester {
                     final String display = getCurrentStage(quest).getPasswordDisplays().get(index);
                     bukkitQuestProgress.passwordsSaid.set(index, true);
 
-                    UniversalScheduler.getScheduler(plugin).runTask(() -> {
-                        finishObjective(quest,
-                                new BukkitObjective(type, null, BlockItemStack.of(Material.AIR, 1, (short) 0),
-                                        BlockItemStack.of(Material.AIR, 1, (short) 0)), null, null, null, null, null, display, null);
-                    });
+                    UniversalScheduler.getScheduler(plugin).runTask(() -> finishObjective(quest,
+                            new BukkitObjective(type, null, BlockItemStack.of(Material.AIR, 1, (short) 0),
+                                    BlockItemStack.of(Material.AIR, 1, (short) 0)), null, null, null, null, null, display, null));
 
                     final int finalIndex = index;
                     dispatchedQuestIDs.addAll(dispatchMultiplayerEverything(quest, type,

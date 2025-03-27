@@ -719,7 +719,7 @@ public class BukkitQuest implements Quest {
             final Player p = (Player)player;
             final String[] ps = BukkitConfigUtil.parseStringWithPossibleLineBreaks(ChatColor.AQUA
                     + finished, this, p);
-            UniversalScheduler.getScheduler(plugin).runTaskLater(p, () -> p.sendMessage(ps), 40);
+            UniversalScheduler.getScheduler(plugin).runTaskLater(() -> p.sendMessage(ps), 40);
         }
         if (planner.getCooldown() > -1) {
             quester.getCompletedTimes().put(this, System.currentTimeMillis());
